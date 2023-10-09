@@ -1,41 +1,53 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
-  </head>
-  <body>
-    <h1>Edit blog</h1>
+<% layout("layouts/boilerplate") -%>
+<h1 class="text-center mb-4">Edit blog</h1>
+<div class="row">
+  <div class="col-4 offset-4">
     <form action="/blogs/<%=blog.id%>?_method=PUT" method="POST">
-      <div>
-        <label for="title">Title</label>
+      <div class="mb-3">
+        <label class="form-label" for="title">Title</label>
         <input
           id="title"
+          class="form-control"
           type="text"
           name="blog[title]"
           value="<%=blog.title%>"
         />
       </div>
-      <div>
-        <label for="image">Image Url</label>
+      <div class="mb-3">
+        <label class="form-label" for="subtitle">Subtitle</label>
+        <input
+          id="subtitle"
+          class="form-control"
+          type="text"
+          name="blog[subtitle]"
+          value="<%=blog.subtitle%>"
+        />
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="image">Image Url</label>
         <input
           id="image"
+          class="form-control"
           type="text"
           name="blog[image]"
           value="<%=blog.image%>"
         />
       </div>
-      <div>
-        <label for="content">Content</label>
-        <textarea id="content" name="blog[content]" rows="4">
+      <div class="mb-3">
+        <label class="form-label" for="content">Content</label>
+        <textarea
+          id="content"
+          class="form-control"
+          name="blog[content]"
+          rows="4"
+        >
 <%=blog.content%></textarea
         >
       </div>
-      <button type="submit">Update blog</button>
+      <button type="submit" class="btn btn-success mt-3">Update blog</button>
     </form>
     <section>
       <a href="/blogs/<%=blog.id%>">Go back</a>
     </section>
-  </body>
-</html>
+  </div>
+</div>
