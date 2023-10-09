@@ -2,10 +2,16 @@
 <h1 class="text-center mb-4">Add blog</h1>
 <div class="row">
   <div class="col-4 offset-4">
-    <form action="/blogs" method="POST">
+    <form class="needs-validation" action="/blogs" method="POST" novalidate>
       <div class="mb-2">
         <label class="form-label" for="title">Title</label>
-        <input class="form-control" id="title" type="text" name="blog[title]" />
+        <input
+          class="form-control"
+          id="title"
+          type="text"
+          name="blog[title]"
+          required
+        />
       </div>
       <div class="mb-2">
         <label class="form-label" for="subtitle">Subtitle</label>
@@ -14,11 +20,18 @@
           id="subtitle"
           type="text"
           name="blog[subtitle]"
+          required
         />
       </div>
       <div class="mb-2">
         <label class="form-label" for="image">Image url</label>
-        <input class="form-control" id="image" type="text" name="blog[image]" />
+        <input
+          class="form-control"
+          id="image"
+          type="text"
+          name="blog[image]"
+          required
+        />
       </div>
       <div class="mb-2">
         <label class="form-label" for="content">Content</label>
@@ -27,6 +40,7 @@
           id="content"
           name="blog[content]"
           rows="4"
+          required
         ></textarea>
       </div>
       <button class="btn btn-success mt-4" type="submit">Add blog</button>

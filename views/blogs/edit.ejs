@@ -2,7 +2,12 @@
 <h1 class="text-center mb-4">Edit blog</h1>
 <div class="row">
   <div class="col-4 offset-4">
-    <form action="/blogs/<%=blog.id%>?_method=PUT" method="POST">
+    <form
+      class="needs-validation"
+      action="/blogs/<%=blog.id%>?_method=PUT"
+      method="POST"
+      novalidate
+    >
       <div class="mb-3">
         <label class="form-label" for="title">Title</label>
         <input
@@ -11,6 +16,7 @@
           type="text"
           name="blog[title]"
           value="<%=blog.title%>"
+          required
         />
       </div>
       <div class="mb-3">
@@ -21,6 +27,7 @@
           type="text"
           name="blog[subtitle]"
           value="<%=blog.subtitle%>"
+          required
         />
       </div>
       <div class="mb-3">
@@ -31,6 +38,7 @@
           type="text"
           name="blog[image]"
           value="<%=blog.image%>"
+          required
         />
       </div>
       <div class="mb-3">
@@ -40,6 +48,7 @@
           class="form-control"
           name="blog[content]"
           rows="4"
+          required
         >
 <%=blog.content%></textarea
         >
