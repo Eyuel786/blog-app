@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <h1><%=blog.title%></h1>
+    <h2><%=blog.content%></h2>
+    <img src="<%=blog.image%>" alt="<%=blog.title%>" />
+    <div>
+      <a href="/blogs/<%=blog.id%>/edit">Update post</a>
+    </di>
+    <form action="/blogs/<%=blog.id%>?_method=DELETE" method="POST">
+        <button type="submit">Delete</button>
+    </form>
+    <div>
+        <a href="/blogs">All blogs</a>
+    </div>
+  </body>
+</html>
