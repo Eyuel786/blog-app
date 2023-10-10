@@ -3,10 +3,14 @@ const mongoose = require("mongoose");
 const path = require("path");
 const ejsMate = require("ejs-mate");
 const methodOverride = require("method-override");
+const session = require("express-session");
+const passport = require("passport");
+const LocalStrategy = require("passport-local");
 const Blog = require("./models/Blog");
 const wrapAsync = require("./utils/wrapAsync");
 const AppError = require("./utils/AppError");
-const { validateBlog } = require("./utils/middlewares");
+const { validateBlog, isLoggedIn } = require("./utils/middlewares");
+const User = require("./models/User");
 
 const app = express();
 
@@ -26,6 +30,30 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use(methodOverride("_method"));
 app.use(express.urlencoded({ extended: true }));
 
+app.use(
+  session({
+    secret: "mySEcREtteXT",
+    resave: false,
+    saveUninitialized: true,
+    cookie: {
+      httpOnly: true,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    },
+  })
+);
+
+app.use(passport.initialize());
+app.use(passport.session());
+passport.use(new LocalStrategy(User.authenticate()));
+
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
+
+app.use((req, res, next) => {
+  res.locals.currentUser = req.user;
+  next();
+});
+
 app.get("/", (req, res) => {
   res.render("home");
 });
@@ -42,6 +70,7 @@ app.get(
 // POST route
 app.post(
   "/blogs",
+  isLoggedIn,
   validateBlog,
   wrapAsync(async (req, res) => {
     const blog = new Blog(req.body.blog);
@@ -50,7 +79,7 @@ app.post(
   })
 );
 
-app.get("/blogs/new", (req, res) => {
+app.get("/blogs/new", isLoggedIn, (req, res) => {
   res.render("blogs/new");
 });
 
@@ -66,6 +95,7 @@ app.get(
 // UPDATE route
 app.get(
   "/blogs/:id/edit",
+  isLoggedIn,
   wrapAsync(async (req, res) => {
     const blog = await Blog.findById(req.params.id);
     res.render("blogs/edit", { blog });
@@ -74,6 +104,7 @@ app.get(
 
 app.put(
   "/blogs/:id",
+  isLoggedIn,
   validateBlog,
   wrapAsync(async (req, res) => {
     const blog = await Blog.findByIdAndUpdate(req.params.id, req.body.blog, {
@@ -86,11 +117,58 @@ app.put(
 // DELETE route
 app.delete(
   "/blogs/:id",
+  isLoggedIn,
   wrapAsync(async (req, res) => {
     await Blog.findByIdAndDelete(req.params.id);
     res.redirect("/blogs");
   })
 );
+
+// USER
+// REGISTER ROUTE
+app.get("/register", (req, res) => {
+  res.render("user/register");
+});
+
+app.post("/register", async (req, res) => {
+  try {
+    const { username, email, password } = req.body;
+    const user = new User({ username, email });
+    const registeredUser = await User.register(user, password);
+    req.login(registeredUser, (error) => {
+      if (error) return next(error);
+      res.redirect("/blogs");
+    });
+  } catch (error) {
+    res.redirect("/register");
+  }
+});
+
+// LOGIN
+app.get("/login", (req, res) => {
+  res.render("user/login");
+});
+
+app.post(
+  "/login",
+  passport.authenticate("local", {
+    failureRedirect: "/login",
+    keepSessionInfo: true,
+  }),
+  (req, res) => {
+    const redirectUrl = req.session.returnTo || "/blogs";
+    delete req.session.returnTo;
+    res.redirect(redirectUrl);
+  }
+);
+
+// LOGOUT
+app.get("/logout", (req, res) => {
+  req.logout((error) => {
+    if (error) return next(error);
+    res.redirect("/blogs");
+  });
+});
 
 app.all("*", (req, res, next) => {
   next(new AppError("Page not found", 404));
