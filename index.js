@@ -14,8 +14,10 @@ const {
   validateBlog,
   isLoggedIn,
   isBlogAuthor,
+  validateComment,
 } = require("./utils/middlewares");
 const User = require("./models/User");
+const Comment = require("./models/Comment");
 
 const app = express();
 
@@ -70,7 +72,19 @@ app.get("/", (req, res) => {
 app.get(
   "/blogs",
   wrapAsync(async (req, res) => {
-    const blogs = await Blog.find({});
+    const blogs = await Blog.find({})
+      .populate({
+        path: "author",
+        select: "username email",
+      })
+      .populate({
+        path: "comments",
+        populate: {
+          path: "author",
+          model: "User",
+          select: "username email",
+        },
+      });
     res.render("blogs/index", { blogs });
   })
 );
@@ -96,8 +110,20 @@ app.get("/blogs/new", isLoggedIn, (req, res) => {
 app.get(
   "/blogs/:id",
   wrapAsync(async (req, res) => {
-    const blog = await Blog.findById(req.params.id);
-    res.render("blogs/show", { blog });
+    const blog = await Blog.findById(req.params.id)
+      .populate({
+        path: "author",
+        select: "username email",
+      })
+      .populate({
+        path: "comments",
+        populate: {
+          path: "author",
+          model: "User",
+          select: "username email",
+        },
+      });
+    res.render("blogs/show", { blog, allowComment: false });
   })
 );
 
@@ -181,6 +207,59 @@ app.get("/logout", (req, res) => {
     res.redirect("/blogs");
   });
 });
+
+// COMMENT
+// ADD COMMENT
+app.get(
+  "/blogs/:id/comments",
+  isLoggedIn,
+  wrapAsync(async (req, res) => {
+    const blog = await Blog.findById(req.params.id)
+      .populate({
+        path: "author",
+        select: "username email",
+      })
+      .populate({
+        path: "comments",
+        populate: {
+          path: "author",
+          model: "User",
+          select: "username email",
+        },
+      });
+    res.render("blogs/show", { blog, allowComment: true });
+  })
+);
+
+app.post(
+  "/blogs/:id/comments",
+  isLoggedIn,
+  validateComment,
+  wrapAsync(async (req, res) => {
+    const blogId = req.params.id;
+    const blog = await Blog.findById(blogId);
+    const comment = new Comment(req.body.comment);
+    comment.author = req.user;
+    blog.comments.push(comment);
+    await Promise.all([blog.save(), comment.save()]);
+    res.redirect(`/blogs/${blogId}`);
+  })
+);
+
+// DELETE COMMENT
+app.delete(
+  "/blogs/:id/comments/:commentId",
+  wrapAsync(async (req, res) => {
+    const { id: blogId, commentId } = req.params;
+    await Blog.findByIdAndUpdate(
+      blogId,
+      { $pull: { comments: commentId } },
+      { new: true, runValidators: true }
+    );
+    await Comment.findByIdAndDelete(commentId);
+    res.redirect(`/blogs/${blogId}`);
+  })
+);
 
 app.all("*", (req, res, next) => {
   next(new AppError("Page not found", 404));

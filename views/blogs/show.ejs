@@ -1,11 +1,23 @@
 <% layout("layouts/boilerplate") -%>
 <div class="row">
   <div class="col-6 offset-3">
-    <h1><%=blog.title%></h1>
+    <h1 class="mb-2"><%=blog.title%></h1>
     <h5 class="text-muted"><%=blog.subtitle%></h5>
-    <img src="<%=blog.image%>" alt="<%=blog.title%>" class="img-fluid" />
+    <div class="mt-4">
+      <p style="margin-bottom: 0"><%=blog.author.username%></p>
+      <small class="text-muted">
+        <%=new Date(blog.updatedAt).toLocaleDateString("en-US", {day: "2-digit",
+        month: "long"})%>
+      </small>
+    </div>
+    <hr />
+    <img
+      src="<%=blog.image%>"
+      alt="<%=blog.title%>"
+      class="img-fluid mt-4 mb-3"
+    />
     <p><%=blog.content%></p>
-    <% if (currentUser && blog.author.equals(currentUser.id)) {%>
+    <% if (currentUser && blog.author._id.equals(currentUser.id)) {%>
     <div>
       <a href="/blogs/<%=blog.id%>/edit" class="btn btn-warning">Edit</a>
       <form
@@ -15,6 +27,51 @@
       >
         <button type="submit" class="btn btn-danger">Delete</button>
       </form>
+    </div>
+    <%}%> <% if (!allowComment) { %>
+    <div class="my-4">
+      <a href="/blogs/<%=blog.id%>/comments" class="btn btn-light">
+        Leave a Comment
+      </a>
+    </div>
+    <%}%> <%if (allowComment) {%>
+    <form
+      class="needs-validation mt-4"
+      action="/blogs/<%=blog.id%>/comments"
+      method="POST"
+      novalidate
+    >
+      <label class="form-label" for="comment">Your comment</label>
+      <textarea
+        id="comment"
+        class="form-control"
+        rows="5"
+        name="comment[content]"
+        required
+      ></textarea>
+      <div class="d-flex gap-2 align-items-baseline mt-4">
+        <a href="/blogs/<%=blog.id%>" class="btn btn-danger">Cancel</a>
+        <button type="submit" class="btn btn-success">Comment</button>
+      </div>
+    </form>
+    <%}%> <%if (blog.comments.length > 0){%>
+    <div class="my-5">
+      <%for (let comment of blog.comments) {%>
+      <div class="card mb-3">
+        <div class="card-body">
+          <h5 class="card-title"><%=comment.author.username%></h5>
+          <p class="card-text text-muted"><%=comment.content%></p>
+          <%if (currentUser && comment.author._id.equals(currentUser.id)) {%>
+          <form
+            action="/blogs/<%=blog.id%>/comments/<%=comment.id%>?_method=DELETE"
+            method="POST"
+          >
+            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+          </form>
+          <%}%>
+        </div>
+      </div>
+      <%}%>
     </div>
     <%}%>
   </div>

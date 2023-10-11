@@ -1,6 +1,6 @@
 const Blog = require("../models/Blog");
 const AppError = require("./AppError");
-const { blogSchema } = require("./schemas");
+const { blogSchema, commentSchema } = require("./schemas");
 const wrapAsync = require("./wrapAsync");
 
 module.exports.validateBlog = (req, res, next) => {
@@ -27,3 +27,12 @@ module.exports.isBlogAuthor = wrapAsync(async (req, res, next) => {
   }
   next();
 });
+
+module.exports.validateComment = (req, res, next) => {
+  const { error } = commentSchema.validate(req.body.comment);
+  if (error) {
+    const errMsg = error.details.map((el) => el.message).join(",");
+    return next(new AppError(errMsg, 400));
+  }
+  next();
+};
