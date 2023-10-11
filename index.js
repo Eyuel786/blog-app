@@ -6,10 +6,15 @@ const methodOverride = require("method-override");
 const session = require("express-session");
 const passport = require("passport");
 const LocalStrategy = require("passport-local");
+const MongoStore = require("connect-mongo");
 const Blog = require("./models/Blog");
 const wrapAsync = require("./utils/wrapAsync");
 const AppError = require("./utils/AppError");
-const { validateBlog, isLoggedIn } = require("./utils/middlewares");
+const {
+  validateBlog,
+  isLoggedIn,
+  isBlogAuthor,
+} = require("./utils/middlewares");
 const User = require("./models/User");
 
 const app = express();
@@ -35,6 +40,9 @@ app.use(
     secret: "mySEcREtteXT",
     resave: false,
     saveUninitialized: true,
+    store: MongoStore.create({
+      mongoUrl: "mongodb://127.0.0.1:27017/blog-app",
+    }),
     cookie: {
       httpOnly: true,
       maxAge: 7 * 24 * 60 * 60 * 1000,
@@ -74,6 +82,7 @@ app.post(
   validateBlog,
   wrapAsync(async (req, res) => {
     const blog = new Blog(req.body.blog);
+    blog.author = req.user;
     await blog.save();
     res.redirect(`/blogs/${blog.id}`);
   })
@@ -96,6 +105,7 @@ app.get(
 app.get(
   "/blogs/:id/edit",
   isLoggedIn,
+  isBlogAuthor,
   wrapAsync(async (req, res) => {
     const blog = await Blog.findById(req.params.id);
     res.render("blogs/edit", { blog });
@@ -105,6 +115,7 @@ app.get(
 app.put(
   "/blogs/:id",
   isLoggedIn,
+  isBlogAuthor,
   validateBlog,
   wrapAsync(async (req, res) => {
     const blog = await Blog.findByIdAndUpdate(req.params.id, req.body.blog, {
@@ -118,6 +129,7 @@ app.put(
 app.delete(
   "/blogs/:id",
   isLoggedIn,
+  isBlogAuthor,
   wrapAsync(async (req, res) => {
     await Blog.findByIdAndDelete(req.params.id);
     res.redirect("/blogs");

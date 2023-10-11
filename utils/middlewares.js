@@ -1,5 +1,7 @@
+const Blog = require("../models/Blog");
 const AppError = require("./AppError");
 const { blogSchema } = require("./schemas");
+const wrapAsync = require("./wrapAsync");
 
 module.exports.validateBlog = (req, res, next) => {
   const { error } = blogSchema.validate(req.body.blog);
@@ -17,3 +19,11 @@ module.exports.isLoggedIn = (req, res, next) => {
   }
   next();
 };
+
+module.exports.isBlogAuthor = wrapAsync(async (req, res, next) => {
+  const blog = await Blog.findById(req.params.id);
+  if (!blog.author.equals(req.user.id)) {
+    return next(new AppError("You are not authorized", 403));
+  }
+  next();
+});

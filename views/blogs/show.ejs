@@ -5,6 +5,7 @@
     <h5 class="text-muted"><%=blog.subtitle%></h5>
     <img src="<%=blog.image%>" alt="<%=blog.title%>" class="img-fluid" />
     <p><%=blog.content%></p>
+    <% if (currentUser && blog.author.equals(currentUser.id)) {%>
     <div>
       <a href="/blogs/<%=blog.id%>/edit" class="btn btn-warning">Edit</a>
       <form
@@ -15,5 +16,6 @@
         <button type="submit" class="btn btn-danger">Delete</button>
       </form>
     </div>
+    <%}%>
   </div>
 </div>
