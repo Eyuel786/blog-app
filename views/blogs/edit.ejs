@@ -6,6 +6,7 @@
       class="needs-validation"
       action="/blogs/<%=blog.id%>?_method=PUT"
       method="POST"
+      enctype="multipart/form-data"
       novalidate
     >
       <div class="mb-3">
@@ -14,7 +15,7 @@
           id="title"
           class="form-control"
           type="text"
-          name="blog[title]"
+          name="title"
           value="<%=blog.title%>"
           required
         />
@@ -25,20 +26,19 @@
           id="subtitle"
           class="form-control"
           type="text"
-          name="blog[subtitle]"
+          name="subtitle"
           value="<%=blog.subtitle%>"
           required
         />
       </div>
       <div class="mb-3">
-        <label class="form-label" for="image">Image Url</label>
+        <label class="form-label" for="image">Pick image</label>
         <input
           id="image"
           class="form-control"
-          type="text"
-          name="blog[image]"
-          value="<%=blog.image%>"
-          required
+          type="file"
+          allow=".jpeg,.jpg,.png"
+          name="image"
         />
       </div>
       <div class="mb-3">
@@ -46,8 +46,8 @@
         <textarea
           id="content"
           class="form-control"
-          name="blog[content]"
-          rows="4"
+          name="content"
+          rows="5"
           required
         >
 <%=blog.content%></textarea

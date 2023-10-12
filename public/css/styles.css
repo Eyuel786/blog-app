@@ -1,3 +1,13 @@
 * {
   font-family: Inter, sans-serif;
 }
+
+@media screen and (min-width: 992px) {
+  .my-nav-container {
+    padding: 0 8rem;
+  }
+
+  .my-dropdown-item:hover {
+    background: rgba(0, 0, 0, 0.2);
+  }
+}

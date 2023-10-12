@@ -14,9 +14,9 @@ db.on("error", console.error.bind(console, "DB connection error:"));
 db.once("open", console.error.bind(console, "Initial DB connection error:"));
 
 const seedDB = async () => {
-  // await Blog.deleteMany({});
-  // await User.deleteMany({});
-  // await Comment.deleteMany({});
+  await Blog.deleteMany({});
+  await User.deleteMany({});
+  await Comment.deleteMany({});
   // const blogs = [
   //   {
   //     title: "How to Successfully Make a Career Switch into AI",

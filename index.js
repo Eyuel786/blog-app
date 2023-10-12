@@ -7,6 +7,7 @@ const session = require("express-session");
 const passport = require("passport");
 const LocalStrategy = require("passport-local");
 const MongoStore = require("connect-mongo");
+const fs = require("fs");
 const Blog = require("./models/Blog");
 const wrapAsync = require("./utils/wrapAsync");
 const AppError = require("./utils/AppError");
@@ -15,9 +16,11 @@ const {
   isLoggedIn,
   isBlogAuthor,
   validateComment,
+  validateUser,
 } = require("./utils/middlewares");
 const User = require("./models/User");
 const Comment = require("./models/Comment");
+const imageUpload = require("./utils/imageUpload");
 
 const app = express();
 
@@ -34,6 +37,7 @@ app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
 app.use(express.static(path.join(__dirname, "public")));
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use(methodOverride("_method"));
 app.use(express.urlencoded({ extended: true }));
 
@@ -75,14 +79,14 @@ app.get(
     const blogs = await Blog.find({})
       .populate({
         path: "author",
-        select: "username email",
+        select: "username email image",
       })
       .populate({
         path: "comments",
         populate: {
           path: "author",
           model: "User",
-          select: "username email",
+          select: "username email image",
         },
       });
     res.render("blogs/index", { blogs });
@@ -93,9 +97,12 @@ app.get(
 app.post(
   "/blogs",
   isLoggedIn,
+  imageUpload.single("image"),
   validateBlog,
   wrapAsync(async (req, res) => {
-    const blog = new Blog(req.body.blog);
+    const { title, subtitle, content } = req.body;
+    const blog = new Blog({ title, subtitle, content });
+    blog.image = req.file.path;
     blog.author = req.user;
     await blog.save();
     res.redirect(`/blogs/${blog.id}`);
@@ -113,14 +120,14 @@ app.get(
     const blog = await Blog.findById(req.params.id)
       .populate({
         path: "author",
-        select: "username email",
+        select: "username email image",
       })
       .populate({
         path: "comments",
         populate: {
           path: "author",
           model: "User",
-          select: "username email",
+          select: "username email image",
         },
       });
     res.render("blogs/show", { blog, allowComment: false });
@@ -141,12 +148,26 @@ app.get(
 app.put(
   "/blogs/:id",
   isLoggedIn,
+  imageUpload.single("image"),
   isBlogAuthor,
   validateBlog,
-  wrapAsync(async (req, res) => {
-    const blog = await Blog.findByIdAndUpdate(req.params.id, req.body.blog, {
-      new: true,
-    });
+  wrapAsync(async (req, res, next) => {
+    const { title, subtitle, content } = req.body;
+    const blog = await Blog.findByIdAndUpdate(
+      req.params.id,
+      { title, subtitle, content },
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+    if (req.file) {
+      fs.unlink(blog.image, (error) => {
+        if (error) return next(error);
+      });
+      blog.image = req.file.path;
+      await blog.save();
+    }
     res.redirect(`/blogs/${blog.id}`);
   })
 );
@@ -168,19 +189,26 @@ app.get("/register", (req, res) => {
   res.render("user/register");
 });
 
-app.post("/register", async (req, res) => {
-  try {
-    const { username, email, password } = req.body;
-    const user = new User({ username, email });
-    const registeredUser = await User.register(user, password);
-    req.login(registeredUser, (error) => {
-      if (error) return next(error);
-      res.redirect("/blogs");
-    });
-  } catch (error) {
-    res.redirect("/register");
+app.post(
+  "/register",
+  imageUpload.single("image"),
+  validateUser,
+  async (req, res) => {
+    try {
+      const { username, email, password } = req.body;
+      const user = new User({ username, email });
+      user.image = req.file.path;
+      const registeredUser = await User.register(user, password);
+      req.login(registeredUser, (error) => {
+        if (error) return next(error);
+        res.redirect("/blogs");
+      });
+    } catch (error) {
+      console.log("Error:", error.message);
+      res.redirect("/register");
+    }
   }
-});
+);
 
 // LOGIN
 app.get("/login", (req, res) => {
@@ -189,6 +217,7 @@ app.get("/login", (req, res) => {
 
 app.post(
   "/login",
+  validateUser,
   passport.authenticate("local", {
     failureRedirect: "/login",
     keepSessionInfo: true,
@@ -217,14 +246,14 @@ app.get(
     const blog = await Blog.findById(req.params.id)
       .populate({
         path: "author",
-        select: "username email",
+        select: "username email image",
       })
       .populate({
         path: "comments",
         populate: {
           path: "author",
           model: "User",
-          select: "username email",
+          select: "username email image",
         },
       });
     res.render("blogs/show", { blog, allowComment: true });
@@ -266,6 +295,13 @@ app.all("*", (req, res, next) => {
 });
 
 app.use((error, req, res, next) => {
+  if (req.file) {
+    fs.unlink(req.file.path, (err) => {
+      if (err) {
+        console.log("Couldn't delete file");
+      }
+    });
+  }
   const { statusCode = 500 } = error;
   res.status(statusCode).render("error", { error });
 });

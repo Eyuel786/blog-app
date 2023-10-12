@@ -1,10 +1,10 @@
 const Blog = require("../models/Blog");
 const AppError = require("./AppError");
-const { blogSchema, commentSchema } = require("./schemas");
+const { blogSchema, commentSchema, userSchema } = require("./schemas");
 const wrapAsync = require("./wrapAsync");
 
 module.exports.validateBlog = (req, res, next) => {
-  const { error } = blogSchema.validate(req.body.blog);
+  const { error } = blogSchema.validate(req.body);
   if (error) {
     const errMsg = error.details.map((el) => el.message).join(",");
     return next(new AppError(errMsg, 400));
@@ -30,6 +30,15 @@ module.exports.isBlogAuthor = wrapAsync(async (req, res, next) => {
 
 module.exports.validateComment = (req, res, next) => {
   const { error } = commentSchema.validate(req.body.comment);
+  if (error) {
+    const errMsg = error.details.map((el) => el.message).join(",");
+    return next(new AppError(errMsg, 400));
+  }
+  next();
+};
+
+module.exports.validateUser = (req, res, next) => {
+  const { error } = userSchema.validate(req.body);
   if (error) {
     const errMsg = error.details.map((el) => el.message).join(",");
     return next(new AppError(errMsg, 400));
