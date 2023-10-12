@@ -24,7 +24,7 @@
       class="img-fluid mt-4 mb-3"
     />
     <p style="white-space: pre-wrap"><%=blog.content%></p>
-    <% if (currentUser && blog.author._id.equals(currentUser.id)) {%>
+    <% if (currentUser && blog.author._id.equals(currentUser.id)) { %>
     <div class="mt-5">
       <a href="/blogs/<%=blog.id%>/edit" class="btn btn-warning">Edit</a>
       <form

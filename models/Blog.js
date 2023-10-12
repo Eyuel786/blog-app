@@ -1,4 +1,5 @@
 const { Schema, model } = require("mongoose");
+const fs = require("fs");
 const Comment = require("./Comment");
 
 const blogSchema = new Schema(
@@ -15,6 +16,12 @@ const blogSchema = new Schema(
 
 blogSchema.post("findOneAndDelete", async (blog) => {
   try {
+    if (blog.image) {
+      fs.unlink(blog.image, (error) => {
+        if (error) throw error;
+      });
+    }
+
     if (blog.comments.length > 0) {
       await Promise.all(
         blog.comments.map((comment) => Comment.findByIdAndDelete(comment))
