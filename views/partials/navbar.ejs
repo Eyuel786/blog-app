@@ -13,49 +13,14 @@
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-      <div class="navbar-nav">
-        <a class="nav-link" href="#">Home</a>
+      <div class="nav navbar-nav ms-auto">
+        <a class="nav-link" href="/">Home</a>
         <a class="nav-link" href="/blogs">Blogs</a>
         <a class="nav-link" href="/blogs/new">Add blog</a>
-      </div>
-      <div class="navbar-nav ms-auto">
         <% if (!currentUser) { %>
         <a href="/register" class="nav-link">Register</a>
         <a href="/login" class="nav-link">Login</a>
-        <% } else { %>
-        <div
-          class="dropdown m-0 p-0 d-lg-flex justify-content-lg-center align-items-lg-center"
-        >
-          <button
-            class="p-0 rounded-circle"
-            type="button"
-            id="dropdownMenuButton1"
-            data-bs-toggle="dropdown"
-            aria-expanded="false"
-            aria-haspopup="true"
-            aria-controls="dropdownMenuButton1"
-          >
-            <img
-              class="rounded-circle d-block mx-auto"
-              src="<%=`http://127.0.0.1:3000/${currentUser.image.replace(/\\/g, '/')}`%>"
-              width="36"
-            />
-          </button>
-          <ul
-            class="dropdown-menu bg-dark"
-            aria-labelledby="dropdownMenuButton1"
-            role="menu"
-          >
-            <li>
-              <a
-                class="dropdown-item my-dropdown-item text-white"
-                href="/logout"
-                >Logout</a
-              >
-            </li>
-          </ul>
-        </div>
-        <% } %>
+        <% } else { %> <%- include("./avatar") %> <% } %>
       </div>
     </div>
   </div>

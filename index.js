@@ -86,11 +86,7 @@ app.all("*", (req, res, next) => {
 
 app.use((error, req, res, next) => {
   if (req.file) {
-    fs.unlink(req.file.path, (err) => {
-      if (err) {
-        console.log("Couldn't delete file");
-      }
-    });
+    fs.unlink(req.file.path, () => {});
   }
   const { statusCode = 500 } = error;
   res.status(statusCode).render("error", { error });

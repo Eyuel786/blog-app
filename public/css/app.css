@@ -4,7 +4,7 @@
 
 @media screen and (min-width: 992px) {
   .my-nav-container {
-    padding: 0 8rem;
+    max-width: 1200px;
   }
 
   .my-dropdown-item:hover {
