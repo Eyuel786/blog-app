@@ -15,11 +15,11 @@
     <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
       <div class="nav navbar-nav ms-auto">
         <a class="nav-link" href="/">Home</a>
-        <a class="nav-link" href="/blogs">Blogs</a>
-        <a class="nav-link" href="/blogs/new">Add blog</a>
+        <a class="nav-link <%=originalUrl === "/blogs" ? "active" : ""%>" href="/blogs">Blogs</a>
+        <a class="nav-link <%=originalUrl === "/blogs/new" ? "active" : ""%>" href="/blogs/new">Add blog</a>
         <% if (!currentUser) { %>
-        <a href="/register" class="nav-link">Register</a>
-        <a href="/login" class="nav-link">Login</a>
+        <a href="/register" class="nav-link <%=originalUrl === "/register" ? "active" : ""%>">Register</a>
+        <a href="/login" class="nav-link <%=originalUrl === "/login" ? "active" : ""%>">Login</a>
         <% } else { %> <%- include("./avatar") %> <% } %>
       </div>
     </div>
