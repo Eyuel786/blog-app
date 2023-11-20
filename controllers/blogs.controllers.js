@@ -1,3 +1,4 @@
+const fs = require("fs");
 const Blog = require("../models/Blog");
 
 module.exports.renderBlogs = async (req, res) => {
